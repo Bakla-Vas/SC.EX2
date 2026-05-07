@@ -25,10 +25,10 @@ The screenshot is cropped to each of the regions in the screenshot and text is e
 ### <ins>Google App Script</ins>
 The json packet sent from the Shortcut via URL post is parsed and processed to be appended to specified Google Sheet table.
 1. Player name is fuzzy matched to a predefined list of most common players to account for any minor errors (e.g. "0" instead of "O"/"i" instead of "l") in the OCR text detection
-2. Aircraft name is matched to ICAO by referencing table of all currently known aircraft
-3. Data is appended to appropriate column at the bottom of the table
-4. Table is sorted by date in descending order
-5. Status message returned to Shortcut to alert user of completion
+2. Aircraft name is matched to ICAO code in lookup table containing all current ingame aircraft.
+3. Data is appended to appropriate column at the bottom of the table.
+4. Table is sorted by date in descending order to bring record to top of table.
+5. Status message returned to Shortcut to alert user that script is complete
 
 [Note] - This portion of the tool is fully automated and does not require any input from the user. A copy of the code is available for reference if you are curious about this portion of the script is doing.
 
@@ -92,4 +92,4 @@ Bulk mode can be used by:
 - Update Pixel region ratios to be more compatible with screen sizes
 
 ## Troubleshooting
-Someone left the door open again and somehow a fly got into the script :(
+Some fuckass left the door open again and a fly got into the script :(
