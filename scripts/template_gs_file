@@ -1,0 +1,270 @@
+// ============================================================
+// CONFIGURATION — update these values only
+// ============================================================
+var CONFIG = {
+  spreadsheetId:  "[INSERT SHEET ID HERE]",
+  dataSheet:      "[TEST] Shortcut DUMP",
+  lookupSheet:    "Lookup Tables",
+  playerCol:      "Player",
+  icaoCol:        "ICAO",
+  aircraftCol:    "Full Name",
+  dateCol:        "Date (UTC)",
+  matchThreshold: 2
+};
+
+
+// ============================================================
+// OPEN SPREADSHEET ONCE — reused across all functions
+// ============================================================
+function getSpreadsheet() {
+  return SpreadsheetApp.openById(CONFIG.spreadsheetId);
+}
+
+
+// ============================================================
+// LEVENSHTEIN DISTANCE
+// ============================================================
+function levenshteinDistance(a, b) {
+  a = a.toUpperCase().trim();
+  b = b.toUpperCase().trim();
+
+  var matrix = [];
+  for (var i = 0; i <= b.length; i++) matrix[i] = [i];
+  for (var j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+  for (var i = 1; i <= b.length; i++) {
+    for (var j = 1; j <= a.length; j++) {
+      matrix[i][j] = b.charAt(i-1) === a.charAt(j-1)
+        ? matrix[i-1][j-1]
+        : Math.min(matrix[i-1][j-1] + 1, matrix[i][j-1] + 1, matrix[i-1][j] + 1);
+    }
+  }
+  return matrix[b.length][a.length];
+}
+
+
+// ============================================================
+// GET LOOKUP TABLE DATA — reads sheet once, returns all values
+// ============================================================
+function getLookupData() {
+  var sheet = getSpreadsheet().getSheetByName(CONFIG.lookupSheet);
+  if (!sheet) {
+    Logger.log("Error: Lookup sheet '" + CONFIG.lookupSheet + "' not found");
+    return null;
+  }
+  return sheet.getDataRange().getValues();
+}
+
+
+// ============================================================
+// FIND COLUMN INDEX BY HEADER NAME
+// ============================================================
+function findColIndex(data, headerName) {
+  for (var i = 0; i < data.length; i++) {
+    for (var j = 0; j < data[i].length; j++) {
+      if (data[i][j].toString().trim() === headerName) {
+        return { row: i, col: j };
+      }
+    }
+  }
+  return null;
+}
+
+
+// ============================================================
+// FUZZY MATCH PLAYER NAME
+// ============================================================
+function fuzzyMatchPlayer(inputName, lookupData) {
+  var found = findColIndex(lookupData, CONFIG.playerCol);
+  if (!found) {
+    Logger.log("Error: Could not find '" + CONFIG.playerCol + "' column");
+    return inputName;
+  }
+
+  var bestMatch = inputName;
+  var bestDistance = Infinity;
+
+  for (var i = found.row + 1; i < lookupData.length; i++) {
+    var playerName = lookupData[i][found.col].toString().trim();
+    if (playerName === "") continue;
+
+    var distance = levenshteinDistance(inputName, playerName);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestMatch = playerName;
+    }
+  }
+
+  if (bestDistance <= CONFIG.matchThreshold) {
+    Logger.log("Player matched: '" + inputName + "' → '" + bestMatch + "' (distance: " + bestDistance + ")");
+    return bestMatch;
+  }
+
+  Logger.log("No player match for: '" + inputName + "' — using original");
+  return inputName;
+}
+
+
+// ============================================================
+// LOOKUP ICAO CODE FROM AIRCRAFT NAME
+// ============================================================
+function lookupICAO(aircraftName, lookupData) {
+  var icaoFound = findColIndex(lookupData, CONFIG.icaoCol);
+  var nameFound = findColIndex(lookupData, CONFIG.aircraftCol);
+
+  if (!icaoFound || !nameFound) {
+    Logger.log("Error: Could not find ICAO or Full Name columns");
+    return aircraftName;
+  }
+
+  for (var i = icaoFound.row + 1; i < lookupData.length; i++) {
+    var fullName = lookupData[i][nameFound.col].toString().trim().toUpperCase();
+    if (fullName === aircraftName.trim().toUpperCase()) {
+      return lookupData[i][icaoFound.col].toString().trim();
+    }
+  }
+
+  Logger.log("No ICAO match for: '" + aircraftName + "' — using original");
+  return aircraftName;
+}
+
+
+// ============================================================
+// SORT TABLE BY DATE DESCENDING
+// ============================================================
+function sortTableByDate(sheet) {
+  var values = sheet.getDataRange().getValues();
+  var headerRowIndex = -1;
+
+  // Find header row containing "Player"
+  for (var i = 0; i < values.length; i++) {
+    if (values[i].indexOf(CONFIG.playerCol) !== -1) {
+      headerRowIndex = i + 1; // 1-indexed
+      break;
+    }
+  }
+
+  if (headerRowIndex === -1) {
+    Logger.log("Error: Could not find table header row");
+    return;
+  }
+
+  // Find Date (UTC) column
+  var headerValues = values[headerRowIndex - 1];
+  var dateCol = -1;
+  for (var i = 0; i < headerValues.length; i++) {
+    if (headerValues[i].toString().trim() === CONFIG.dateCol) {
+      dateCol = i + 1; // 1-indexed
+      break;
+    }
+  }
+
+  if (dateCol === -1) {
+    Logger.log("Error: Could not find '" + CONFIG.dateCol + "' column");
+    return;
+  }
+
+  var firstDataRow = headerRowIndex + 1;
+  var lastRow = sheet.getLastRow();
+  var lastCol = sheet.getLastColumn();
+
+  if (lastRow <= headerRowIndex) {
+    Logger.log("No data rows to sort");
+    return;
+  }
+
+  sheet.getRange(firstDataRow, 1, lastRow - headerRowIndex, lastCol)
+    .sort({ column: dateCol, ascending: false });
+
+  Logger.log("Table sorted by '" + CONFIG.dateCol + "' descending");
+}
+
+
+// ============================================================
+// MAIN POST HANDLER
+// ============================================================
+function doPost(e) {
+  try {
+    var spreadsheet = getSpreadsheet();
+    var sheet = spreadsheet.getSheetByName(CONFIG.dataSheet);
+
+    if (!sheet) {
+      return ContentService.createTextOutput("Error: Sheet '" + CONFIG.dataSheet + "' not found");
+    }
+
+    var data = JSON.parse(e.postData.contents);
+
+    // Load lookup data once and pass to both functions
+    var lookupData = getLookupData();
+    if (!lookupData) {
+      return ContentService.createTextOutput("Error: Could not load lookup table");
+    }
+
+    var playerName = fuzzyMatchPlayer(data.playerName || "", lookupData);
+    var icao       = lookupICAO(data.aircraftName || "", lookupData);
+
+    // Append to next empty row in columns B-F
+    var lastRow = sheet.getLastRow();
+    sheet.getRange(lastRow + 1, 2, 1, 5).setValues([[
+      playerName,
+      icao,
+      data.xp     || "",
+      data.status || "",
+      data.date   || ""
+    ]]);
+
+    // Sort table by date descending
+    sortTableByDate(sheet);
+
+    return ContentService.createTextOutput(
+      "[GREAT SUCCESS :D] " + playerName + " — " + icao + " — XP added"
+    );
+
+  } catch(err) {
+    return ContentService.createTextOutput("Error: " + err.message);
+  }
+}
+
+
+// ============================================================
+// TEST FUNCTIONS
+// ============================================================
+function testFuzzyMatch() {
+  var lookupData = getLookupData();
+  var testCases = ["Woofles", "BakiaVas", "ScubaSteve28", "ScubaSteve82", "UnknownPlayer"];
+  for (var i = 0; i < testCases.length; i++) {
+    Logger.log("Input: " + testCases[i] + " → " + fuzzyMatchPlayer(testCases[i], lookupData));
+  }
+}
+
+function testLookup() {
+  var lookupData = getLookupData();
+  var testCases = ["SOLAR IMPULSE 2", "BOEING 777-300ER", "UNKNOWN AIRCRAFT"];
+  for (var i = 0; i < testCases.length; i++) {
+    Logger.log("Input: " + testCases[i] + " → " + lookupICAO(testCases[i], lookupData));
+  }
+}
+
+function testPost() {
+  var mockEvent = {
+    postData: {
+      contents: JSON.stringify({
+        playerName:   "Woofles",
+        aircraftName: "SOLAR IMPULSE 2",
+        xp:           "5,217,630",
+        status:       "Confirmed",
+        date:         "5/5/26"
+      })
+    }
+  };
+  Logger.log(doPost(mockEvent).getContent());
+}
+
+function testAll() {
+  Logger.log("=== FUZZY MATCH ===");
+  testFuzzyMatch();
+  Logger.log("=== ICAO LOOKUP ===");
+  testLookup();
+  Logger.log("=== FULL POST ===");
+  testPost();
+}
