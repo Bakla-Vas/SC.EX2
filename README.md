@@ -1,6 +1,6 @@
 # SC.EX^2
 
-SC.EX2 (SkyCards Experience Extract) is an automated ETL tool designed to extract a SkyCards player's Aircraft XP from an ingame battle screenshot and append the data to a shared Google Sheet table. The The tool can be run for each screenshot as it is taken or in bulk mode to upload multiple records at once. 
+SC.EX2 (FlyCards Experience Extract) is an automated ETL tool designed to extract a FlyCards player's Aircraft XP from an ingame battle screenshot and append the data to a shared Google Sheet table. The The tool can be run for each screenshot as it is taken or in bulk mode to upload multiple records at once. 
 
 *Disclaimer: Code used within the Google Script Portion of the tool has been generated using Claude AI.*
 
@@ -92,3 +92,4 @@ Bulk mode can be used by:
 - Update Pixel region ratios to be more compatible with screen sizes
 
 ## Troubleshooting
+Someone left the door open again and somehow a fly got into the script :(
