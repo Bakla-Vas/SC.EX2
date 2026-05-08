@@ -78,6 +78,8 @@ Bulk mode can be used by:
 - Switch to scraping all text data from the right side of the screenshot and using regular expressions (REGEX) to extract record information
   
 ### Backlog
+- Test extracting text from entire screenshot
+- Make shortcut dump raw extracts into a file so that more than 10 can be sent at a time
 - Add automated Record ID
 - Dump raw text grab in a separate sheet with corresponding Record ID for refence/manual correction should an error occur
     - Alternatively, upload the cropped screenshot for manual checking 
