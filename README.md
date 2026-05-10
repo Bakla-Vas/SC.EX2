@@ -9,7 +9,7 @@ SC.EX^2 is a two stage script which makes use of both iOS Shortcut scripting and
 
 ### <ins>iPhone Shortcut</ins>
 
-***[NOTE] Currently reworking this portion of the script to work using REGEX to extract information from the raw screenshot extract rather than cropping and extracting information to make the shortcut more compatible with all screen sizes.***
+***[NOTE] Steps below are outdated and will be updated soon. Currently reworking this portion of the script to work using REGEX to extract information from the raw screenshot extract rather than cropping and extracting information to make the shortcut more compatible with all screen sizes.***
 
 The screenshot is cropped to each of the regions in the screenshot and text is extracted and packaged as a json to be sent to the google script App.
 1. Share when a screenshot is taken or select bulk upload of screenshots
@@ -37,29 +37,30 @@ SC.EX2 can be downloaded using the following file link.
 
 [INSERT LINK HERE WHEN COMPLETE]
 
-Open link and select Add Shortcut
-Upon running the Shortcut for the first time you will be prompted to allow media sharing via the shortcut. Select allow always to never see this notification again. (This alert is tied to the amount of screenshots being processed and will appear when a greater amount is being input)
-Upon completion of the Shortcut an alert should appear either indicating the script was successful including the players name and aircraft ICAO or an Error code. 
+1. Open link and select Add Shortcut
+2. Upon running the Shortcut for the first time you will be prompted to allow media sharing via the shortcut. Select allow always to never see this notification again. (This alert is tied to the amount of screenshots being processed and will appear when a greater amount is being input)
+3. Upon completion of the Shortcut an alert should appear either indicating the script was successful including the players name and aircraft ICAO or an Error code. 
   - If an error code appears post to the XP Screenshots chat
 
 ## How to Run
 ### Instant Sharing Mode (Single Screenshots)
 This mode allows quick upload of data during a battle by running the tool from the screenshot editer share Sheet. [Insert Share Icon]. It should be possible to take a screenshot and upload during the time you have between rounds, meaning you won't have to save the screenshot to your phone's storage.
 
-Tool can be run directly when taking a screenshot 
-1. Click small screenshot window to enable editing
-2. Click share button
-3. Scroll down to bottom of list and select Extract Card Information
-4. Script will run in the background, you can close screenshot editting without saving screenshot.
-5. When the script is complete you should receive a notification
+Tool can be run directly after taking a screenshot 
+1. Take a screenshot of the battle card you would like to add.
+2. Open screenshot editing (if not already open) by selecting the small screenshot window in the bottom left of the screen.
+3. Click share button in the top right
+4. Select show more and scroll down to bottom of the list and select SC.EX^2.
+5. The script will run in the background, you can close screenshot X out of the screenshot without saving.
+6. When the script is complete you should receive a notification stating the Player name aircraft icao and XP value.
 
 ### Bulk Upload Mode (Multiple Screenshots)
 This mode allows multiple screenshot to be uploaded at a time from your photo library 
 
 Bulk mode can be used by:
-1. Run Shortcut (either from within shortcut app/home screen bookmark/siri etc.)
+1. Manually trigger shortcut (either from within shortcut app/home screen bookmark/siri etc.)
 2. You will be prompted to select photos to be processed.
-   - Select up to 10 screenshots.
+   - Select up to 10 screenshots (This is the default limit you can share, this can be increase in the Settings App by going to Apps>Shortcuts>Advanced>Allow Sharing Large Amounts of Data).
 3. Upon running it for the first time you will be prompted for permission to send screenshots.
    - Select Always Allow if you do not want to see this every time the tool is run
 4. The script will iterate through each of the screenshots
