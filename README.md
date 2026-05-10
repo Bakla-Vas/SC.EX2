@@ -72,26 +72,31 @@ Bulk mode can be used by:
 - Using lookup table to match airplane name from card to ICAO code used in data table
 - Fuzzy player name check from lookup table sheet to ensure minor errors in image to text conversion are corrected
 - Appending record info at bottom of table and then sort by descending order
+- Raw text from right side (oppenent's card) of the screenshot now parsed and processed completely within Google Apps Script allowing for expanded compatibility with device screen sizes.
+    - Combination of REGEX and lookup tables used to extract "Player Name" and "ICAO" code from raw text. (Refer to README in scripts folder for more detail)
+    - No longer utilises cropping regions for individual components.
 
 ### In Development
 - (Ongoing) Optimise scripting speed
-- Switch to scraping all text data from the right side of the screenshot and using regular expressions (REGEX) to extract record information
   
 ### Backlog
+- Add notification for time taken to complete script in bulk mode
 - Test extracting text from entire screenshot
-- Make shortcut dump raw extracts into a file so that more than 10 can be sent at a time
 - Add automated Record ID
 - Dump raw text grab in a separate sheet with corresponding Record ID for refence/manual correction should an error occur
     - Alternatively, upload the cropped screenshot for manual checking 
-- Function to flag incorrect names in status column
-- Function to add new player names to lookup table if not found during fuzzy playuer name check
-- Data quality check within shortcut before pushing to google script to ensure no null values are being sent.
-- Clean up all of the names in the lookup table so that they are clean
+- Add Function to flag incorrect names in status column for review (only if they are within a certain range beyond threshold)
+    - Add Function to append new player names to lookup table if not found during fuzzy playuer name check (for names not flagged in above test) 
+- Clean up all of the names in the lookup table so that they can be consistently matched to raw text
+    - Remove flags/emojis and special characters as they are not recognised by OCR
+    - Standardise font/characters (e.g. small text for "Olaf Scholaf")
 - Test google drive OCR Text recognition capabilities
 
 ### Deprecated Features/Upates
 - Using defined pixel regions to extract infromation from screenshot - not reliable for scrpaing information from different screenshot/phone screen sizes
 - Update Pixel region ratios to be more compatible with screen sizes
+- Make shortcut dump raw extracts into a file so that more than 10 can be sent at a time
+- [No longer required as text filtering moved to google apps script] Data quality check within shortcut before pushing to google script to ensure no null values are being sent.
 
 ## Troubleshooting
-Some fuckass left the door open again and a fly got into the script :(
+Some fuckass left the door open and a fly got into the code :(
