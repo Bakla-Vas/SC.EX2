@@ -33,11 +33,9 @@ The json packet sent from the Shortcut via URL post is parsed and processed to b
 [Note] - This portion of the tool is fully automated and does not require any input from the user. A copy of the code is available for reference if you are curious about this portion of the script is doing.
 
 ## Installation
-SC.EX2 can be downloaded using the following file link.
+SC.EX2 shortcut file will be provided.
 
-[INSERT LINK HERE WHEN COMPLETE]
-
-1. Open link and select Add Shortcut
+1. Open Shortcut App file and select Add Shortcut
 2. Upon running the Shortcut for the first time you will be prompted to allow media sharing via the shortcut. Select allow always to never see this notification again. (This alert is tied to the amount of screenshots being processed and will appear when a greater amount is being input)
 3. Upon completion of the Shortcut an alert should appear either indicating the script was successful including the players name and aircraft ICAO or an Error code. 
   - If an error code appears post to the XP Screenshots chat
