@@ -77,18 +77,16 @@ Bulk mode can be used by:
 
 ### In Development
 - (Ongoing) Optimise scripting speed
-  
-### Backlog
-- Add notification for time taken to complete script in bulk mode
-- Test extracting text from entire screenshot
-- Add automated Record ID
-- Dump raw text grab in a separate sheet with corresponding Record ID for refence/manual correction should an error occur
-    - Alternatively, upload the cropped screenshot for manual checking 
+- Duplicate detection where all fields are identical
+- Add Record ID to all records
 - Add Function to flag incorrect names in status column for review (only if they are within a certain range beyond threshold)
-    - Add Function to append new player names to lookup table if not found during fuzzy playuer name check (for names not flagged in above test) 
-- Clean up all of the names in the lookup table so that they can be consistently matched to raw text
-    - Remove flags/emojis and special characters as they are not recognised by OCR
-    - Standardise font/characters (e.g. small text for "Olaf Scholaf")
+    - Dump raw text grab in a separate sheet with corresponding Record ID for refence/manual correction should an error occur
+- Add Function to append new player names to lookup table if not found during fuzzy playuer name check (for names not flagged in above test) 
+
+### Backlog
+- Add android compatibility
+    - Android version of shortcut workflow to extract card text and send to apps script
+- Add notification for time taken to complete script in bulk mode
 - Test google drive OCR Text recognition capabilities
 
 ### Deprecated Features/Upates
