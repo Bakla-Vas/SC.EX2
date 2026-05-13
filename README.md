@@ -99,5 +99,5 @@ Bulk mode can be used by:
 - Make shortcut dump raw extracts into a file so that more than 10 can be sent at a time
 - [No longer required as text filtering moved to google apps script] Data quality check within shortcut before pushing to google script to ensure no null values are being sent.
 
-## Troubleshooting
+## Known Issues
 Some fuckass left the door open and a fly got into the code :(
