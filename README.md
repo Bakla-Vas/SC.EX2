@@ -76,14 +76,18 @@ Bulk mode can be used by:
     - No longer utilises cropping regions for individual components.
 
 ### In Development
-- (Ongoing) Optimise scripting speed
+- (Ongoing) Script Optimisation
+    - Investigate other sources for lookup tables and reduce need for sheets API calls
+        - Getting list of aircraft names and ICAO codes from SkyCards API
+        - Fetching player names from another source      
 - Duplicate detection where all fields are identical
 - Add Record ID to all records
-- Add Function to flag incorrect names in status column for review (only if they are within a certain range beyond threshold)
-    - Dump raw text grab in a separate sheet with corresponding Record ID for refence/manual correction should an error occur
-- Add Function to append new player names to lookup table if not found during fuzzy playuer name check (for names not flagged in above test) 
+- Move config variables to a separate input sheet so that there are no hard coded values in main script 
 
 ### Backlog
+- Add Function to flag incorrect names in status column for review (only if they are within a certain range beyond threshold)
+    - Dump raw text grab in a separate sheet with corresponding Record ID for refence/manual correction should an error occur
+- Add Function to append new player names to lookup table if not found during fuzzy playuer name check (for names not flagged in above test)
 - Add android compatibility
     - Android version of shortcut workflow to extract card text and send to apps script
 - Add notification for time taken to complete script in bulk mode
