@@ -78,13 +78,13 @@ Bulk mode can be used by:
 - Add Record ID to all records
 - Move config variables to a separate input sheet so that there are no hard coded values in main script
 - Processing progress tracking notifications stating how many screenshots from batch have been processed (e.g. 1/20, 5/10, 1/1)
+- Automate conversion of Screenshot time taken from Local Device Time zone to UTC
 
 ### In Development
 - (Ongoing) Script Optimisation
     - Investigate other sources for lookup tables and reduce need for sheets API calls
         - Getting list of aircraft names and ICAO codes from SkyCards API
         - Fetching player names from another source
-- Automate conversion of Screenshot time taken from Local Device Time zone to UTC     
 
 ### Backlog
 - Add Function to flag incorrect names in status column for review (only if they are within a certain range beyond threshold)
