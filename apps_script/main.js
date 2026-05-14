@@ -87,27 +87,31 @@ function doPost(e) {
       return ContentService.createTextOutput("Error: No raw OCR text received");
     }
 
-    // Load lookup data once — shared across all functions
-    var lookupData = getLookupData(spreadsheet);
-    if (!lookupData) {
+    // Load player list and aircraft map from cache or sheet.
+    // Each is fetched independently so a cold cache for one
+    // does not force an unnecessary re-read for the other.
+    var playerList  = getPlayerList(spreadsheet);
+    var aircraftMap = getAircraftMap(spreadsheet);
+
+    if (!playerList || !aircraftMap) {
       logToRawExtract(spreadsheet, "ERROR", "ERROR", data.rawText,
-                      null, null, null, null, "Could not load lookup table");
-      return ContentService.createTextOutput("Error: Could not load lookup table");
+                      null, null, null, null, "Could not load lookup data");
+      return ContentService.createTextOutput("Error: Could not load lookup data");
     }
 
     // ── EXTRACTION ─────────────────────────────────────────
     extractedPlayer = extractPlayerFromOCR(data.rawText);
-    xp              = extractXPFromOCR(data.rawText)            || "";
-    icao            = lookupICAOFromOCR(data.rawText, lookupData) || "";
+    xp              = extractXPFromOCR(data.rawText)                  || "";
+    icao            = lookupICAOFromOCR(data.rawText, aircraftMap)    || "";
 
     // Apply fuzzy matching to extracted player name
     matchedPlayer = extractedPlayer
-      ? fuzzyMatchPlayer(extractedPlayer, lookupData)
+      ? fuzzyMatchPlayer(extractedPlayer, playerList)
       : "";
 
     // Apply manual overrides if provided
     if (data.playerOverride && data.playerOverride.trim() !== "") {
-      matchedPlayer = fuzzyMatchPlayer(data.playerOverride.trim(), lookupData);
+      matchedPlayer = fuzzyMatchPlayer(data.playerOverride.trim(), playerList);
     }
     if (data.xpOverride   && data.xpOverride.trim()   !== "") xp   = data.xpOverride.trim();
     if (data.icaoOverride && data.icaoOverride.trim() !== "") icao = data.icaoOverride.trim();
