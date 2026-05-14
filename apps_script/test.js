@@ -69,7 +69,7 @@ function testExtractXP() {
 
 function testFuzzyMatch() {
   Logger.log("=== FUZZY MATCH TEST ===");
-  var lookupData = getLookupData(getSpreadsheet());
+  var playerList = getPlayerList(getSpreadsheet());
   var cases = [
     "Woofles",
     "W00fles",
@@ -79,22 +79,22 @@ function testFuzzyMatch() {
     "UnknownXYZPlayer"
   ];
   for (var i = 0; i < cases.length; i++) {
-    var result = fuzzyMatchPlayer(cases[i], lookupData);
-    Logger.log("Input: '" + cases[i] + "' → '" + result + "'");
+    var result = fuzzyMatchPlayer(cases[i], playerList);
+    Logger.log("Input: '" + cases[i] + "' -> '" + result + "'");
   }
 }
 
 
 function testICAOLookup() {
   Logger.log("=== ICAO LOOKUP TEST ===");
-  var lookupData = getLookupData(getSpreadsheet());
+  var aircraftMap = getAircraftMap(getSpreadsheet());
   var cases = [
     ["= UNCOMMON S\nAIRBUS\nA380\n2005\nFIRST FLIGHT\n3.11\nRARITY\nCYBER 39 525 676 XP", "A388"],
     ["- ULTRA &\nSOLAR IMPULSE 2\n2014\n10.90\nFIRST FLIGHT\nCYBER 5 217 630 XP",         "SOL2"],
     ["= ULTRA =\nBOEING\n777-300ER\n2003\n1.55\nFIRST FLIGHT",                            "B77W"]
   ];
   for (var i = 0; i < cases.length; i++) {
-    var result = lookupICAOFromOCR(cases[i][0], lookupData);
+    var result = lookupICAOFromOCR(cases[i][0], aircraftMap);
     var status = result === cases[i][1] ? "✅" : "❌";
     Logger.log(status + " Expected: " + cases[i][1] + " | Got: " + result);
   }
@@ -243,7 +243,7 @@ function testDateNormalisation() {
   // null input simulates an omitted date field — expects today
   var cases = [
     // Full EXIF with positive offset — should convert to UTC
-    ["13-05-2026 09:15:00 +1000",  "2026-05-12"],  // 09:15 AEST = 23:15 UTC prev day
+    ["2026-05-13 09:15:00 +1000",  "2026-05-12"],  // 09:15 AEST = 23:15 UTC prev day
     // Full EXIF with negative offset
     ["2026-05-13 02:00:00 -0500",  "2026-05-13"],  // 02:00 EST = 07:00 UTC same day
     // ISO 8601 with colon offset
@@ -290,6 +290,92 @@ function testDateNormalisation() {
 
 
 // ============================================================
+// CACHE TEST
+// Validates both player and aircraft caches independently:
+//   1. Cold cache -- sheet read, data written to cache
+//   2. Warm cache -- data returned from cache (fast)
+//   3. Data consistency between sheet read and cache read
+//   4. Selective clear -- clearPlayerCache() only invalidates
+//      the player list, aircraft cache remains intact
+//   5. clearAllCaches() invalidates both
+// Timing logged for each call to confirm performance gain.
+// ============================================================
+function testCache() {
+  Logger.log("=== CACHE TEST ===");
+  var spreadsheet = getSpreadsheet();
+
+  // Step 1 -- clear all caches to start clean
+  clearAllCaches();
+  Logger.log("Step 1: All caches cleared -- starting fresh");
+
+  // Step 2 -- cold reads (expect sheet reads)
+  var t1          = Date.now();
+  var playerList1 = getPlayerList(spreadsheet);
+  var d1p         = Date.now() - t1;
+
+  var t2           = Date.now();
+  var aircraftMap1 = getAircraftMap(spreadsheet);
+  var d1a          = Date.now() - t2;
+
+  Logger.log(
+    "Step 2: Cold reads -- players: " + playerList1.length +
+    " (" + d1p + "ms) | aircraft: " +
+    Object.keys(aircraftMap1).length + " (" + d1a + "ms)"
+  );
+
+  // Step 3 -- warm reads (expect cache hits)
+  var t3          = Date.now();
+  var playerList2 = getPlayerList(spreadsheet);
+  var d2p         = Date.now() - t3;
+
+  var t4           = Date.now();
+  var aircraftMap2 = getAircraftMap(spreadsheet);
+  var d2a          = Date.now() - t4;
+
+  Logger.log(
+    "Step 3: Warm reads -- players: " + playerList2.length +
+    " (" + d2p + "ms) | aircraft: " +
+    Object.keys(aircraftMap2).length + " (" + d2a + "ms)"
+  );
+
+  // Validate data consistency
+  var playersMatch  = JSON.stringify(playerList1)  === JSON.stringify(playerList2);
+  var aircraftMatch = JSON.stringify(aircraftMap1) === JSON.stringify(aircraftMap2);
+  Logger.log((playersMatch  ? "✅" : "❌") + " Player list consistent");
+  Logger.log((aircraftMatch ? "✅" : "❌") + " Aircraft map consistent");
+
+  // Validate cache is faster than sheet read
+  Logger.log((d2p < d1p ? "✅" : "❌") +
+    " Player cache (" + d2p + "ms) faster than sheet read (" + d1p + "ms)");
+  Logger.log((d2a < d1a ? "✅" : "❌") +
+    " Aircraft cache (" + d2a + "ms) faster than sheet read (" + d1a + "ms)");
+
+  // Step 4 -- selective clear: player only
+  clearPlayerCache();
+  var t5          = Date.now();
+  var playerList3 = getPlayerList(spreadsheet);  // expect sheet read
+  var d3p         = Date.now() - t5;
+
+  var t6           = Date.now();
+  var aircraftMap3 = getAircraftMap(spreadsheet); // expect cache hit
+  var d3a          = Date.now() - t6;
+
+  Logger.log(
+    "Step 4: After clearPlayerCache() -- " +
+    "players: " + d3p + "ms (expect slow) | " +
+    "aircraft: " + d3a + "ms (expect fast)"
+  );
+  Logger.log((d3p > d2p ? "✅" : "❌") + " Player cache correctly invalidated");
+  Logger.log((d3a < d1a ? "✅" : "❌") + " Aircraft cache correctly preserved");
+
+  // Step 5 -- clear all
+  clearAllCaches();
+  Logger.log("Step 5: clearAllCaches() called -- next reads will hit sheet");
+  Logger.log("Cache test complete");
+}
+
+
+// ============================================================
 // RUN ALL TESTS
 // Executes the full test suite in sequence. Because this
 // calls functions across every file, a clean pass here
@@ -307,5 +393,6 @@ function testAll() {
   testGenerateId();
   testDuplicateCheck();
   testDateNormalisation();
+  testCache();
   testPost();
 }
