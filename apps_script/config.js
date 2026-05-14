@@ -61,12 +61,33 @@ var CONFIG = {
   // ── DATE / TIMESTAMP FORMATS ─────────────────────────────
   dateFormat:       "yyyy-MM-dd",
   timestampFormat:  "yyyy-MM-dd HH:mm:ss",
-
+  
   // ── TIMEZONE ─────────────────────────────────────────────
   // Fallback timezone used if no date is provided in the
   // incoming payload. Uses IANA timezone names.
   // Full list: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
   timezone:         "UTC",
+
+  // ── CACHE ────────────────────────────────────────────────
+  // Duration in seconds lookup data is held in cache before
+  // a fresh sheet read is triggered. 12 hours = 43200s.
+  // CacheService.put() has a hard 21600s (6hr) maximum TTL
+  // per key — a separate timestamp key enforces 12hr expiry.
+  //
+  // Player and aircraft lists are cached under separate keys
+  // so each has its own 100KB chunk limit and can be cleared
+  // independently when only one table is updated.
+  //
+  // Chunk keys:  base key + "_0", "_1", "_2" ...
+  // Count key:   base key + "_n"
+  // Timestamp:   shared single key
+  //
+  // All keys must be unique to this project if multiple
+  // Apps Script projects share the same cache scope.
+  cacheDuration:          43200,
+  cachePlayerKey:         "SCEX2_players",
+  cacheAircraftKey:       "SCEX2_aircraft",
+  cacheTimestampKey:      "SCEX2_timestamp",
 
   // ── RECORD ID FORMAT ─────────────────────────────────────
   idPrefix:         "SC",
