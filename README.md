@@ -9,35 +9,32 @@ SC.EX^2 is a two stage script which makes use of both iOS Shortcut scripting and
 
 ### <ins>iPhone Shortcut</ins>
 
-***[NOTE] Steps below are outdated and will be updated soon. Currently reworking this portion of the script to work using REGEX to extract information from the raw screenshot extract rather than cropping and extracting information to make the shortcut more compatible with all screen sizes.***
-
 The screenshot is cropped to each of the regions in the screenshot and text is extracted and packaged as a json to be sent to the google script App.
 1. Share when a screenshot is taken or select bulk upload of screenshots
 2. Shortcut will iterate through selected screenshots
-3. Screenshot dimensions and date taken are extracted
-4. **[Currently being replaced]** Pixel ranges for each of the data points is defined
-    - Ratios of sceenshot size are utilised to ensure compatability across iphone screen sizes.
-5. **[Currently being replaced]** Images are cropped to each region and text extracted from image
-6. Text is processed to remove any unwanted portions
-7. Data points are compiled into a JSON and posted via URL to Google App
-8. Alert will appear when google script is complete either indicating success or error.
+3. Date taken ius extracted from screenshot metadata in ISO8601 time format
+4. Screenshot dimensions are extracted
+5. Raw text is extracted from the right side of the screenshot
+6. Raw text and date information are compiled into a JSON and sent to Google App Script vie URL POST.
+7. Alert will appear when google script is complete either indicating success or error.
 
 ### <ins>Google App Script</ins>
-The json packet sent from the Shortcut via URL post is parsed and processed to be appended to specified Google Sheet table.
-1. Player name is fuzzy matched to a predefined list of most common players to account for any minor errors (e.g. "0" instead of "O"/"i" instead of "l") in the OCR text detection
-2. Aircraft name is matched to ICAO code in lookup table containing all current ingame aircraft.
-3. Data is appended to appropriate column at the bottom of the table.
-4. Table is sorted by date in descending order to bring record to top of table.
-5. Status message returned to Shortcut to alert user that script is complete
+The json packet sent from the Shortcut via URL post is parsed, processed and appended appended to specified Google Sheet table.
+1. Raw text is parsed and data points are extracted using comination of regex and lookup table 
+2. Player name is fuzzy matched to a predefined list of most common players to account for any minor errors (e.g. "0" instead of "O"/"i" instead of "l") in the OCR text detection
+3. Aircraft name is matched to ICAO code in lookup table containing all current ingame aircraft.
+4. Data is appended to appropriate column at the bottom of the table.
+6. Status message returned to Shortcut to alert user that script is complete.
 
 [Note] - This portion of the tool is fully automated and does not require any input from the user. A copy of the code is available for reference if you are curious about this portion of the script is doing.
 
 ## Installation
 SC.EX2 shortcut file will be provided.
 
-1. Open Shortcut App file and select Add Shortcut
-2. Upon running the Shortcut for the first time you will be prompted to allow media sharing via the shortcut. Select allow always to never see this notification again. (This alert is tied to the amount of screenshots being processed and will appear when a greater amount is being input)
-3. Upon completion of the Shortcut an alert should appear either indicating the script was successful including the players name and aircraft ICAO or an Error code. 
+1. Download shortcut app from file attached to message or iCloud link
+2. Open Shortcut App file and select Add Shortcut
+3. Upon running the Shortcut for the first time you will be prompted to allow media sharing via the shortcut. Select allow always to never see this notification again. (This alert is tied to the amount of screenshots being processed and will appear when a greater amount is being input)
+4. Upon completion of the Shortcut an alert should appear either indicating the script was successful including the players name and aircraft ICAO or an Error code. 
   - If an error code appears post to the XP Screenshots chat
 
 ## How to Run
@@ -81,10 +78,9 @@ Bulk mode can be used by:
 - Automate conversion of Screenshot time taken from Local Device Time zone to UTC
 
 ### In Development
-- (Ongoing) Script Optimisation
-    - Investigate other sources for lookup tables and reduce need for sheets API calls
-        - Getting list of aircraft names and ICAO codes from SkyCards API
-        - Fetching player names from another source
+- Google sheet and google app sheet replacement
+    - Investigate lightweight cloud SQL solutions hosting database and process incoming data points
+    - Develop web app alternative to Looker(Data) Studio
 
 ### Backlog
 - Add Function to flag incorrect names in status column for review (only if they are within a certain range beyond threshold)
@@ -94,6 +90,10 @@ Bulk mode can be used by:
     - Android version of shortcut workflow to extract card text and send to apps script
 - Add notification for time taken to complete script in bulk mode
 - Test google drive OCR Text recognition capabilities
+- Investigate other sources for lookup tables and reduce need for sheets API calls
+    - Getting list of aircraft names and ICAO codes from SkyCards API
+    - Fetching player names from another source
+- (Ongoing) Script Optimisation
 
 ### Deprecated Features/Upates
 - Using defined pixel regions to extract infromation from screenshot - not reliable for scrpaing information from different screenshot/phone screen sizes
@@ -102,4 +102,5 @@ Bulk mode can be used by:
 - [No longer required as text filtering moved to google apps script] Data quality check within shortcut before pushing to google script to ensure no null values are being sent.
 
 ## Known Issues
-Some fuckass left the door open and a fly got into the code :(
+- Some fuckass left the door open and a fly got into the code :(
+- Phantom's Can't Hang 
