@@ -94,7 +94,7 @@ Bulk mode can be used by:
     - Getting list of aircraft names and ICAO codes from SkyCards API
     - Fetching player names from another source
 - (Ongoing) Script Optimisation
-- Purge complete duplicates from the database at a regular interval
+- SkyCards API probing - have script check if new version available in response text and retry with new version to retrieve table.
 
 ### Deprecated Features/Upates
 - Using defined pixel regions to extract infromation from screenshot - not reliable for scrpaing information from different screenshot/phone screen sizes
